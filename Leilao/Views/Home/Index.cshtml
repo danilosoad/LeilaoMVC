@@ -1,0 +1,135 @@
+﻿@model X.PagedList.IPagedList<ProdutoModel>
+@using X.PagedList.Mvc.Core;
+
+@{
+    ViewData["Title"] = "Home Page";
+    var filtro = ViewBag.Keyword;
+}
+<head>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
+</head>
+
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Efetuar Lance</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label for="valorLance">Valor</label>
+                        <input type="text" id="valorLance" required placeholder="valor do lance" />
+
+                    </div>
+                    <div class="form-group">
+
+                        <label for="responsavelLance">Nome</label>
+                        <input type="text" id="responsavelLance" placeholder="nome do interessado" />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="btn-darLance">Confirmar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="text-center">
+    <h1 class="display-4">Leilão</h1>
+    <p>busque produtos e faça lances.</p>
+</div>
+<br />
+<form>
+    <div class="form-group">
+        @*<label for="nomeProduto">Pesquisar pelo nome</label>*@
+        <input type="text" class="form-control" id="nomeProduto" aria-describedby="valorhelp" name="keyword" placeholder="pequise pelo nome">
+    </div>
+    <button asp-controller="Home" asp-action="Index" type="submit" class="btn btn-primary">
+        <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-search" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" d="M10.442 10.442a1 1 0 0 1 1.415 0l3.85 3.85a1 1 0 0 1-1.414 1.415l-3.85-3.85a1 1 0 0 1 0-1.415z" />
+            <path fill-rule="evenodd" d="M6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM13 6.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z" />
+        </svg>
+    </button>
+</form>
+<br />
+<table class="table table-bordered table-striped table-hover">
+    <tr class="text-center">
+        <th>
+            ID
+        </th>
+        <th>
+            PRODUTO
+        </th>
+        <th>ULTIMO LANCE</th>
+        <th>VALOR</th>
+        <th>ULTIMO INTERESSADO</th>
+        <th></th>
+    </tr>
+    @foreach (var item in Model)
+    {
+<tr>
+    <td>
+        @Html.DisplayFor(modelItem => item.ID)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.NOME)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.ULTIMOLANCE)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.VALOR)
+    </td>
+    <td>
+        @Html.DisplayFor(modelItem => item.ULTIMAPESSOANOME)
+    </td>
+    <td>
+        <button class="btn btn-sm btn-primary" data-toggle="modal" id="btn-OpenModal" onclick="GetIdClick(@item.ID)" data-target="#exampleModal">Dar Lance</button>
+    </td>
+</tr>
+    }
+</table>
+
+@Html.PagedListPager(Model, pagina => Url.Action("Index", new { keyword = filtro, pagina }))
+
+<script type="text/javascript">
+    let idClick;
+
+
+
+    $('#btn-darLance').click(function () {
+        let dados = {
+            valorLance: $('#valorLance').val(),
+            responsavelLance: $('#responsavelLance').val(),
+            id: idClick
+        }
+
+        console.log(dados)
+        $.post('@Url.Action("DarLance")', dados, function (d) {
+            if (d == 'ok') {
+                alert("Lance Efetuado");
+                $('#exampleModal').modal('hide')
+
+                window.location.reload();
+            }
+            else {
+                alert('O valor precisa ser maior que o atual')
+            }
+        });
+    });
+
+
+    function GetIdClick(id) {
+
+        idClick = id;
+        console.log(idClick)
+    }
+
+</script>
